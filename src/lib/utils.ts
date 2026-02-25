@@ -24,6 +24,26 @@ export function isValidHexColor(color: string): boolean {
 }
 
 /**
+ * プロジェクト名からURLスラッグを自動生成する
+ * 例: "My Project" → "my-project"
+ */
+export function generateSlug(name: string): string {
+  const slug = name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/[\s-]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .substring(0, 46); // 最大48文字制約に収めるためのベース
+
+  if (slug.length < 3) {
+    return `project-${Math.random().toString(36).slice(2, 6)}`;
+  }
+
+  return slug;
+}
+
+/**
  * 日付文字列を日本語形式でフォーマットする
  */
 export function formatDate(dateString: string): string {

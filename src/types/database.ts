@@ -44,6 +44,7 @@ export interface Database {
           stripe_customer_id?: string | null;
           updated_at?: string;
         };
+        Relationships: [];
       };
       projects: {
         Row: {
@@ -78,6 +79,15 @@ export interface Database {
           form_config?: Json;
           updated_at?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: "projects_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       testimonials: {
         Row: {
@@ -124,6 +134,15 @@ export interface Database {
           tags?: string[];
           updated_at?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: "testimonials_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       widgets: {
         Row: {
@@ -149,6 +168,15 @@ export interface Database {
           config?: Json;
           updated_at?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: "widgets_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       subscriptions: {
         Row: {
@@ -180,6 +208,15 @@ export interface Database {
           current_period_end?: string;
           updated_at?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       stripe_events: {
         Row: {
@@ -197,6 +234,7 @@ export interface Database {
           type?: string;
           processed_at?: string;
         };
+        Relationships: [];
       };
     };
     Views: {
