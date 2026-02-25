@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 export interface SignUpFormState {
   error: string | null;
@@ -46,4 +47,25 @@ export async function signUpWithEmail(
   }
 
   return { error: null, success: true };
+}
+
+export async function signUpWithGoogle() {
+  const supabase = await createClient();
+  const headersList = await headers();
+  const origin = headersList.get("origin");
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${origin}/auth/callback`,
+    },
+  });
+
+  if (error) {
+    redirect("/register?error=oauth_error");
+  }
+
+  if (data.url) {
+    redirect(data.url);
+  }
 }

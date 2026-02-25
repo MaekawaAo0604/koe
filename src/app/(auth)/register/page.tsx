@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { RegisterForm } from "@/components/auth/register-form";
+import { OAuthButton } from "@/components/auth/oauth-button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { signUpWithGoogle } from "./actions";
 
 export default function RegisterPage() {
   return (
@@ -12,6 +14,15 @@ export default function RegisterPage() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        <OAuthButton provider="google" formAction={signUpWithGoogle} />
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-card px-2 text-muted-foreground">または</span>
+          </div>
+        </div>
         <RegisterForm />
         <div className="text-center text-sm text-muted-foreground">
           すでにアカウントをお持ちの方は{" "}

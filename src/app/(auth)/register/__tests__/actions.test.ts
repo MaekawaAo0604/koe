@@ -10,6 +10,10 @@ vi.mock("next/headers", () => ({
   }),
 }));
 
+vi.mock("next/navigation", () => ({
+  redirect: vi.fn(),
+}));
+
 describe("signUpWithEmail", () => {
   beforeEach(() => {
     vi.resetModules();
@@ -78,5 +82,50 @@ describe("signUpWithEmail", () => {
     const result = await signUpWithEmail({ error: null, success: false }, formData);
     expect(result.error).toBeNull();
     expect(result.success).toBe(true);
+  });
+});
+
+describe("signUpWithGoogle", () => {
+  beforeEach(() => {
+    vi.resetModules();
+    vi.clearAllMocks();
+  });
+
+  it("OAuth成功時に返されたURLへリダイレクトする", async () => {
+    const { createClient } = await import("@/lib/supabase/server");
+    vi.mocked(createClient).mockResolvedValue({
+      auth: {
+        signInWithOAuth: vi.fn().mockResolvedValue({
+          data: { url: "https://accounts.google.com/oauth" },
+          error: null,
+        }),
+      },
+    } as never);
+
+    const { redirect } = await import("next/navigation");
+    const { signUpWithGoogle } = await import("../actions");
+
+    await signUpWithGoogle();
+
+    expect(vi.mocked(redirect)).toHaveBeenCalledWith("https://accounts.google.com/oauth");
+  });
+
+  it("OAuthエラー時は登録ページへリダイレクトする", async () => {
+    const { createClient } = await import("@/lib/supabase/server");
+    vi.mocked(createClient).mockResolvedValue({
+      auth: {
+        signInWithOAuth: vi.fn().mockResolvedValue({
+          data: { url: null },
+          error: { message: "OAuth error" },
+        }),
+      },
+    } as never);
+
+    const { redirect } = await import("next/navigation");
+    const { signUpWithGoogle } = await import("../actions");
+
+    await signUpWithGoogle();
+
+    expect(vi.mocked(redirect)).toHaveBeenCalledWith("/register?error=oauth_error");
   });
 });
