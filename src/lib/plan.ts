@@ -5,7 +5,7 @@ import type { PlanType } from "@/types/database";
 export const FREE_PLAN_TESTIMONIAL_LIMIT = 10;
 
 /** Freeプランのプロジェクト数上限 */
-export const FREE_PLAN_PROJECT_LIMIT = 3;
+export const FREE_PLAN_PROJECT_LIMIT = 1;
 
 /**
  * ユーザーのプランを取得する。

@@ -81,7 +81,7 @@ describe("getProjectLimit", () => {
 
   it("Freeプランは FREE_PLAN_PROJECT_LIMIT を返す", () => {
     expect(getProjectLimit("free")).toBe(FREE_PLAN_PROJECT_LIMIT);
-    expect(getProjectLimit("free")).toBe(3);
+    expect(getProjectLimit("free")).toBe(1);
   });
 });
 
@@ -105,7 +105,7 @@ describe("定数", () => {
     expect(FREE_PLAN_TESTIMONIAL_LIMIT).toBe(10);
   });
 
-  it("FREE_PLAN_PROJECT_LIMIT が 3 である", () => {
-    expect(FREE_PLAN_PROJECT_LIMIT).toBe(3);
+  it("FREE_PLAN_PROJECT_LIMIT が 1 である", () => {
+    expect(FREE_PLAN_PROJECT_LIMIT).toBe(1);
   });
 });
