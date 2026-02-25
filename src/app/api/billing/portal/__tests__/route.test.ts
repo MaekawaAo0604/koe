@@ -106,4 +106,39 @@ describe("POST /api/billing/portal", () => {
     const body = await res.json();
     expect(body.url).toBe("https://billing.stripe.com/p/session/xxx");
   });
+
+  it("Stripe API エラー時は 500 を返す", async () => {
+    const { createClient } = await import("@/lib/supabase/server");
+    const { stripe } = await import("@/lib/stripe/client");
+
+    vi.mocked(createClient).mockResolvedValue({
+      auth: {
+        getUser: vi.fn().mockResolvedValue({
+          data: { user: { id: "user-1" } },
+          error: null,
+        }),
+      },
+      from: vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue({
+              data: { stripe_customer_id: "cus_xxx" },
+              error: null,
+            }),
+          }),
+        }),
+      }),
+    } as never);
+
+    vi.mocked(stripe.billingPortal.sessions.create).mockRejectedValue(
+      new Error("Stripe error")
+    );
+
+    const { POST } = await import("../route");
+    const res = await POST(makeRequest());
+
+    expect(res.status).toBe(500);
+    const body = await res.json();
+    expect(body.error).toBe("Failed to create portal session");
+  });
 });
