@@ -1,7 +1,42 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ProjectList } from "@/components/dashboard/project-list";
+import { createClient } from "@/lib/supabase/server";
+import type { Database } from "@/types/database";
+import type { ProjectWithCount } from "@/types/index";
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  type ProjectRow = Database["public"]["Tables"]["projects"]["Row"];
+  type ProjectWithTestimonials = ProjectRow & {
+    testimonials: { count: number }[] | null;
+  };
+
+  const { data: rawData } = await supabase
+    .from("projects")
+    .select("*, testimonials(count)")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+
+  const projects = rawData as ProjectWithTestimonials[] | null;
+
+  const projectsWithCount: ProjectWithCount[] = (projects ?? []).map((p) => {
+    const testimonial_count = p.testimonials?.[0]?.count ?? 0;
+    const { testimonials: _t, ...rest } = p;
+    return { ...rest, testimonial_count } as unknown as ProjectWithCount;
+  });
+
   return (
     <div className="max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-6">
@@ -11,26 +46,15 @@ export default function DashboardPage() {
             テスティモニアル収集プロジェクトを管理します
           </p>
         </div>
-        <Button>
-          <PlusCircle className="w-4 h-4 mr-2" aria-hidden="true" />
-          新しいプロジェクト
+        <Button asChild>
+          <Link href="/projects/new">
+            <PlusCircle className="w-4 h-4 mr-2" aria-hidden="true" />
+            新しいプロジェクト作成
+          </Link>
         </Button>
       </div>
 
-      {/* 空状態 */}
-      <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
-        <div className="rounded-full bg-muted p-4 mb-4">
-          <PlusCircle className="w-8 h-8 text-muted-foreground" aria-hidden="true" />
-        </div>
-        <h2 className="text-lg font-semibold mb-1">プロジェクトがありません</h2>
-        <p className="text-muted-foreground text-sm mb-6 max-w-sm">
-          最初のプロジェクトを作成して、顧客の声を収集しましょう
-        </p>
-        <Button>
-          <PlusCircle className="w-4 h-4 mr-2" aria-hidden="true" />
-          プロジェクトを作成する
-        </Button>
-      </div>
+      <ProjectList projects={projectsWithCount} />
     </div>
   );
 }
