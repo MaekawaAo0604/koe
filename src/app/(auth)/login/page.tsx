@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { LoginForm } from "@/components/auth/login-form";
 import { OAuthButton } from "@/components/auth/oauth-button";
@@ -23,7 +24,9 @@ export default function LoginPage() {
             <span className="bg-card px-2 text-muted-foreground">または</span>
           </div>
         </div>
-        <LoginForm />
+        <Suspense fallback={null}>
+          <LoginForm />
+        </Suspense>
         <div className="text-center text-sm space-y-2">
           <div>
             <Link href="/forgot-password" className="text-primary hover:underline">
