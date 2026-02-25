@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -19,6 +20,11 @@ const DEFAULT_CONFIG: WidgetConfig = {
   border_radius: 8,
   shadow: true,
   font_family: "inherit",
+};
+
+export const metadata: Metadata = {
+  title: "ウィジェット設定",
+  robots: { index: false, follow: false },
 };
 
 export default async function WidgetSettingsPage({ params }: Params) {

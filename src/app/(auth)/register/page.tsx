@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { RegisterForm } from "@/components/auth/register-form";
+
+export const metadata: Metadata = {
+  title: "新規登録",
+  description: "Koeに無料登録して、テスティモニアルの収集・管理を始めましょう。クレジットカード不要。",
+};
 import { OAuthButton } from "@/components/auth/oauth-button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { signUpWithGoogle } from "./actions";

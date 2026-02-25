@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "プロジェクト作成",
+  robots: { index: false, follow: false },
+};
 import { redirect } from "next/navigation";
 import { ArrowLeft, Zap } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";

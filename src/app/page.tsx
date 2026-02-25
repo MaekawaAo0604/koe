@@ -1,5 +1,19 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Check, X, Star, MessageSquare, BarChart3, Globe } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: {
+    absolute: "Koe - テスティモニアル収集・管理SaaS",
+  },
+  description:
+    "フォームURL共有→自動収集→scriptタグ1行埋め込み。フリーランス・個人開発者のための手軽なテスティモニアルSaaS。無料で始められます。",
+  openGraph: {
+    title: "Koe - テスティモニアル収集・管理SaaS",
+    description:
+      "フォームURL共有→自動収集→scriptタグ1行埋め込み。フリーランス・個人開発者のための手軽なテスティモニアルSaaS。無料で始められます。",
+  },
+};
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";

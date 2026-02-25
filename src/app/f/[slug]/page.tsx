@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import { CollectionForm } from "@/components/forms/collection-form";
@@ -9,6 +10,27 @@ import type { PlanType } from "@/types/database";
 export const revalidate = 60;
 
 type Params = { params: Promise<{ slug: string }> };
+
+export async function generateMetadata({ params }: Params): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase = createServiceRoleClient();
+
+  const { data: project } = await supabase
+    .from("projects")
+    .select("name")
+    .eq("slug", slug)
+    .single();
+
+  if (!project) {
+    return { title: "フォームが見つかりません" };
+  }
+
+  return {
+    title: { absolute: `${project.name} - ご感想をお聞かせください` },
+    description: `${project.name}のテスティモニアル収集フォームです。ぜひあなたの声をお聞かせください。`,
+    robots: { index: false, follow: false },
+  };
+}
 
 export default async function CollectionFormPage({ params }: Params) {
   const { slug } = await params;

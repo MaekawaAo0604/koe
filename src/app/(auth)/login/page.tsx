@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "ログイン",
+  description: "Koeにログインして、テスティモニアルの収集・管理を開始しましょう。",
+  robots: { index: false },
+};
 import { LoginForm } from "@/components/auth/login-form";
 import { OAuthButton } from "@/components/auth/oauth-button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";

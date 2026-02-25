@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Settings, LayoutGrid } from "lucide-react";
@@ -26,6 +27,11 @@ const WIDGET_TYPE_LABELS: Record<string, string> = {
 const THEME_LABELS: Record<string, string> = {
   light: "ライト",
   dark: "ダーク",
+};
+
+export const metadata: Metadata = {
+  title: "ウィジェット管理",
+  robots: { index: false, follow: false },
 };
 
 export default async function WidgetsPage({ params }: Params) {

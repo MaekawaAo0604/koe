@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
@@ -17,6 +18,11 @@ type SearchParams = {
     rating?: string;
     tags?: string;
   }>;
+};
+
+export const metadata: Metadata = {
+  title: "テスティモニアル管理",
+  robots: { index: false, follow: false },
 };
 
 export default async function ProjectTestimonialsPage({

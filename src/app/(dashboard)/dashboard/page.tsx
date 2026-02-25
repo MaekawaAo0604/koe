@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { PlusCircle, ArrowUpCircle } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "ダッシュボード",
+  robots: { index: false, follow: false },
+};
 import { Button } from "@/components/ui/button";
 import { ProjectList } from "@/components/dashboard/project-list";
 import { createClient } from "@/lib/supabase/server";

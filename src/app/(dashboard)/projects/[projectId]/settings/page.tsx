@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -7,6 +8,11 @@ import { ProjectSettingsForm } from "@/components/dashboard/project-settings-for
 import type { Project } from "@/types/index";
 
 type Params = { params: Promise<{ projectId: string }> };
+
+export const metadata: Metadata = {
+  title: "プロジェクト設定",
+  robots: { index: false, follow: false },
+};
 
 export default async function ProjectSettingsPage({ params }: Params) {
   const { projectId } = await params;

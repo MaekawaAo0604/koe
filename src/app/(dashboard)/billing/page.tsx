@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
+
+export const metadata: Metadata = {
+  title: "プラン・課金",
+  robots: { index: false, follow: false },
+};
 import { Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { BillingContent } from "@/components/billing/billing-content";

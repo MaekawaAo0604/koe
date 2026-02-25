@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Star } from "lucide-react";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
@@ -10,6 +11,30 @@ import type { TestimonialPublic } from "@/types/index";
 export const revalidate = 60;
 
 type Params = { params: Promise<{ slug: string }> };
+
+export async function generateMetadata({ params }: Params): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase = createServiceRoleClient();
+
+  const { data: project } = await supabase
+    .from("projects")
+    .select("name")
+    .eq("slug", slug)
+    .single();
+
+  if (!project) {
+    return { title: "Wall of Love が見つかりません" };
+  }
+
+  return {
+    title: { absolute: `${project.name} - Wall of Love | Koe` },
+    description: `${project.name}のお客様の声一覧です。実際のユーザーからの評価・感想をご覧ください。`,
+    openGraph: {
+      title: `${project.name} - Wall of Love`,
+      description: `${project.name}のお客様の声一覧です。`,
+    },
+  };
+}
 
 export default async function WallOfLovePage({ params }: Params) {
   const { slug } = await params;
