@@ -89,8 +89,8 @@
 - 「Powered by Koe」バッジ
 
 ### 8. 課金画面
-- 現在のプラン表示
-- プランアップグレード / ダウングレード
+- 現在のプラン表示（Free / Pro）
+- Free → Pro アップグレード
 - Stripe Checkout へのリダイレクト
 - 請求履歴
 
@@ -104,7 +104,7 @@ id: uuid
 email: string
 name: string
 avatar_url: string?
-plan: enum (free, pro, business)
+plan: enum (free, pro)
 stripe_customer_id: string?
 created_at: timestamp
 ```
@@ -150,7 +150,7 @@ created_at: timestamp
 id: uuid
 user_id: uuid (FK -> users)
 stripe_subscription_id: string
-plan: enum (pro, business)
+plan: enum (pro)
 status: enum (active, canceled, past_due)
 current_period_end: timestamp
 created_at: timestamp
@@ -237,7 +237,6 @@ created_at: timestamp
 - [ ] SNSインポート（X, Googleレビュー, 食べログ）
 - [ ] AI感情分析
 - [ ] A/Bテスト
-- [ ] チーム機能（複数メンバー）
 - [ ] API key 発行
 - [ ] Webhook
 - [ ] 多言語対応

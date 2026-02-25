@@ -59,7 +59,7 @@
 |------|-------|-----|
 | 言語 | 英語 | 日本語ネイティブ |
 | 決済 | USD | JPY（日本円） |
-| SNSインポート | Twitter, G2, Yelp, Shopify | X, Googleレビュー, **食べログ, ホットペッパー** |
-| ツール連携 | Framer, WordPress, Webflow | **ペライチ, STUDIO, Notion** |
+| SNSインポート | Twitter, G2, Yelp, Shopify | X, Googleレビュー |
+| ツール連携 | Framer, WordPress, Webflow | **ペライチ, STUDIO** |
 | サポート | 英語 | 日本語 |
 | 価格 | $29/mo (≈¥4,350) | ¥980/mo |
