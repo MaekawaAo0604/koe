@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, ArrowUpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProjectList } from "@/components/dashboard/project-list";
 import { createClient } from "@/lib/supabase/server";
+import { getUserPlan, getProjectLimit, isAtLimit } from "@/lib/plan";
 import type { Database } from "@/types/database";
 import type { ProjectWithCount } from "@/types/index";
 
@@ -37,6 +38,12 @@ export default async function DashboardPage() {
     return { ...rest, testimonial_count } as unknown as ProjectWithCount;
   });
 
+  // プラン制限チェック（要件2 AC-6,7）
+  const plan = await getUserPlan(user.id);
+  const projectLimit = getProjectLimit(plan);
+  const atProjectLimit =
+    projectLimit !== Infinity && isAtLimit(projectsWithCount.length, projectLimit);
+
   return (
     <div className="max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-6">
@@ -46,13 +53,41 @@ export default async function DashboardPage() {
             テスティモニアル収集プロジェクトを管理します
           </p>
         </div>
-        <Button asChild>
-          <Link href="/projects/new">
-            <PlusCircle className="w-4 h-4 mr-2" aria-hidden="true" />
-            新しいプロジェクト作成
-          </Link>
-        </Button>
+        {/* Freeプランで上限到達時はアップグレードボタンを表示（要件2 AC-6） */}
+        {atProjectLimit ? (
+          <Button asChild variant="outline" data-testid="upgrade-button-project-limit">
+            <Link href="/billing">
+              <ArrowUpCircle className="w-4 h-4 mr-2" aria-hidden="true" />
+              Proにアップグレード
+            </Link>
+          </Button>
+        ) : (
+          <Button asChild>
+            <Link href="/projects/new">
+              <PlusCircle className="w-4 h-4 mr-2" aria-hidden="true" />
+              新しいプロジェクト作成
+            </Link>
+          </Button>
+        )}
       </div>
+
+      {/* Freeプランの上限到達バナー（要件2 AC-6） */}
+      {atProjectLimit && (
+        <div
+          className="mb-6 p-4 rounded-lg border border-amber-200 bg-amber-50 text-amber-800"
+          role="status"
+          data-testid="project-limit-banner"
+        >
+          <p className="text-sm font-medium">Freeプランのプロジェクト上限に達しました</p>
+          <p className="text-xs mt-1">
+            Freeプランでは{projectLimit}つまでプロジェクトを作成できます。
+            <Link href="/billing" className="underline font-medium ml-1">
+              Proプランにアップグレード
+            </Link>
+            すると無制限にプロジェクトを作成できます。
+          </p>
+        </div>
+      )}
 
       <ProjectList projects={projectsWithCount} />
     </div>
