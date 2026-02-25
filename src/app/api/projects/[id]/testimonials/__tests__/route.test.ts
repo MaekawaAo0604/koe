@@ -6,6 +6,11 @@ const { mockLimitFn } = vi.hoisted(() => ({
   mockLimitFn: vi.fn().mockResolvedValue({ success: true }),
 }));
 
+// Server クライアントのモック（GET エンドポイント用）
+vi.mock("@/lib/supabase/server", () => ({
+  createClient: vi.fn(),
+}));
+
 // Service Role クライアントのモック
 vi.mock("@/lib/supabase/service-role", () => ({
   createServiceRoleClient: vi.fn(),
@@ -317,6 +322,120 @@ describe("POST /api/projects/[id]/testimonials", () => {
     vi.spyOn(req, "formData").mockResolvedValue(mockFormData);
 
     const res = await POST(req, { params: Promise.resolve({ id: "test-id" }) });
+
+    expect(res.status).toBe(400);
+    const json = await res.json();
+    expect(json.code).toBe("VALIDATION_ERROR");
+  });
+});
+
+// ---- GET エンドポイントのテスト ----
+import { createClient } from "@/lib/supabase/server";
+const mockCreateClient = vi.mocked(createClient);
+
+const mockTestimonials = [
+  { id: "t-1", project_id: "test-id", status: "pending", author_name: "山田 太郎", rating: 5, content: "良い", tags: [], created_at: "2024-01-01T00:00:00Z" },
+  { id: "t-2", project_id: "test-id", status: "approved", author_name: "田中 花子", rating: 4, content: "まあまあ", tags: ["おすすめ"], created_at: "2024-01-02T00:00:00Z" },
+];
+
+function buildServerClientMock(user: { id: string } | null, projectData: unknown, testimonialData: unknown) {
+  const mockOrder = vi.fn().mockResolvedValue({ data: testimonialData, error: null });
+  const mockOverlaps = vi.fn().mockReturnValue({ order: mockOrder });
+  const mockEqRating = vi.fn().mockReturnValue({ order: mockOrder, overlaps: mockOverlaps });
+  const mockEqStatus = vi.fn().mockReturnValue({ order: mockOrder, eq: mockEqRating, overlaps: mockOverlaps });
+  const mockEqProject = vi.fn().mockReturnValue({ order: mockOrder, eq: mockEqStatus, overlaps: mockOverlaps });
+  const mockSelectTestimonials = vi.fn().mockReturnValue({ eq: mockEqProject });
+
+  const mockProjectSingle = vi.fn().mockResolvedValue({ data: projectData, error: projectData ? null : { code: "PGRST116" } });
+  const mockProjectEq2 = vi.fn().mockReturnValue({ single: mockProjectSingle });
+  const mockProjectEq1 = vi.fn().mockReturnValue({ eq: mockProjectEq2 });
+  const mockSelectProject = vi.fn().mockReturnValue({ eq: mockProjectEq1 });
+
+  return {
+    auth: {
+      getUser: vi.fn().mockResolvedValue({ data: { user }, error: null }),
+    },
+    from: vi.fn().mockImplementation((table: string) => {
+      if (table === "projects") return { select: mockSelectProject };
+      return { select: mockSelectTestimonials };
+    }),
+  };
+}
+
+describe("GET /api/projects/:id/testimonials", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.resetModules();
+  });
+
+  it("未認証の場合は401を返す", async () => {
+    mockCreateClient.mockResolvedValue(
+      buildServerClientMock(null, null, null) as never
+    );
+
+    const { GET } = await import("../route");
+    const req = new NextRequest("http://localhost/api/projects/test-id/testimonials");
+    const res = await GET(req, { params: Promise.resolve({ id: "test-id" }) });
+
+    expect(res.status).toBe(401);
+    const json = await res.json();
+    expect(json.code).toBe("UNAUTHORIZED");
+  });
+
+  it("存在しないプロジェクトは404を返す", async () => {
+    mockCreateClient.mockResolvedValue(
+      buildServerClientMock({ id: "user-1" }, null, null) as never
+    );
+
+    const { GET } = await import("../route");
+    const req = new NextRequest("http://localhost/api/projects/nonexistent/testimonials");
+    const res = await GET(req, { params: Promise.resolve({ id: "nonexistent" }) });
+
+    expect(res.status).toBe(404);
+    const json = await res.json();
+    expect(json.code).toBe("NOT_FOUND");
+  });
+
+  it("フィルタなしで全テスティモニアルを返す（200）", async () => {
+    mockCreateClient.mockResolvedValue(
+      buildServerClientMock({ id: "user-1" }, { id: "test-id" }, mockTestimonials) as never
+    );
+
+    const { GET } = await import("../route");
+    const req = new NextRequest("http://localhost/api/projects/test-id/testimonials");
+    const res = await GET(req, { params: Promise.resolve({ id: "test-id" }) });
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(Array.isArray(json)).toBe(true);
+  });
+
+  it("無効なstatusフィルタで400を返す", async () => {
+    mockCreateClient.mockResolvedValue(
+      buildServerClientMock({ id: "user-1" }, { id: "test-id" }, mockTestimonials) as never
+    );
+
+    const { GET } = await import("../route");
+    const req = new NextRequest(
+      "http://localhost/api/projects/test-id/testimonials?status=invalid"
+    );
+    const res = await GET(req, { params: Promise.resolve({ id: "test-id" }) });
+
+    expect(res.status).toBe(400);
+    const json = await res.json();
+    expect(json.code).toBe("VALIDATION_ERROR");
+  });
+
+  it("無効なratingフィルタで400を返す", async () => {
+    mockCreateClient.mockResolvedValue(
+      buildServerClientMock({ id: "user-1" }, { id: "test-id" }, mockTestimonials) as never
+    );
+
+    const { GET } = await import("../route");
+    const req = new NextRequest(
+      "http://localhost/api/projects/test-id/testimonials?rating=6"
+    );
+    const res = await GET(req, { params: Promise.resolve({ id: "test-id" }) });
 
     expect(res.status).toBe(400);
     const json = await res.json();

@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
+import { createClient } from "@/lib/supabase/server";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import { submitTestimonialSchema } from "@/lib/validators/testimonial";
 import { getTestimonialLimit, isAtLimit } from "@/lib/plan";
-import type { PlanType } from "@/types/database";
+import type { PlanType, TestimonialStatus } from "@/types/database";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -15,6 +16,98 @@ const ratelimit = new Ratelimit({
   redis: Redis.fromEnv(),
   limiter: Ratelimit.slidingWindow(10, "1 h"),
 });
+
+// GET /api/projects/:id/testimonials - テスティモニアル一覧取得（フィルタ対応）
+// フィルタパラメータ: status, rating, tags（カンマ区切り）
+export async function GET(request: NextRequest, { params }: Params) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return NextResponse.json(
+      { error: "認証が必要です", code: "UNAUTHORIZED" },
+      { status: 401 }
+    );
+  }
+
+  const { id: projectId } = await params;
+
+  // プロジェクトの存在確認とオーナーチェック (RLSによる保護)
+  const { data: project, error: projectError } = await supabase
+    .from("projects")
+    .select("id")
+    .eq("id", projectId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (projectError || !project) {
+    return NextResponse.json(
+      { error: "プロジェクトが見つかりません", code: "NOT_FOUND" },
+      { status: 404 }
+    );
+  }
+
+  // クエリパラメータからフィルタを取得
+  const searchParams = request.nextUrl.searchParams;
+  const statusParam = searchParams.get("status");
+  const ratingParam = searchParams.get("rating");
+  const tagsParam = searchParams.get("tags");
+
+  // テスティモニアル一覧クエリ（作成日時降順）
+  let query = supabase
+    .from("testimonials")
+    .select("*")
+    .eq("project_id", projectId)
+    .order("created_at", { ascending: false });
+
+  // statusフィルタ (pending | approved | rejected)
+  if (statusParam) {
+    const validStatuses: TestimonialStatus[] = ["pending", "approved", "rejected"];
+    if (validStatuses.includes(statusParam as TestimonialStatus)) {
+      query = query.eq("status", statusParam as TestimonialStatus);
+    } else {
+      return NextResponse.json(
+        { error: "statusの値が無効です", code: "VALIDATION_ERROR" },
+        { status: 400 }
+      );
+    }
+  }
+
+  // ratingフィルタ (1-5)
+  if (ratingParam) {
+    const rating = Number(ratingParam);
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+      return NextResponse.json(
+        { error: "ratingは1〜5の整数で指定してください", code: "VALIDATION_ERROR" },
+        { status: 400 }
+      );
+    }
+    query = query.eq("rating", rating);
+  }
+
+  // tagsフィルタ（カンマ区切り → 配列 → overlaps検索）
+  if (tagsParam) {
+    const tags = tagsParam.split(",").map((t) => t.trim()).filter(Boolean);
+    if (tags.length > 0) {
+      query = query.overlaps("tags", tags);
+    }
+  }
+
+  const { data: testimonials, error: fetchError } = await query;
+
+  if (fetchError) {
+    return NextResponse.json(
+      { error: "テスティモニアルの取得に失敗しました", code: "INTERNAL_ERROR" },
+      { status: 500 }
+    );
+  }
+
+  return NextResponse.json(testimonials ?? []);
+}
 
 // POST /api/projects/:id/testimonials - テスティモニアル投稿（認証不要・公開）
 export async function POST(request: NextRequest, { params }: Params) {

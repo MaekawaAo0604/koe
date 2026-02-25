@@ -18,3 +18,17 @@ export const submitTestimonialSchema = z.object({
 });
 
 export type SubmitTestimonialInput = z.infer<typeof submitTestimonialSchema>;
+
+// PATCH /api/testimonials/:id 用スキーマ
+// status, tags, author_name（表示名）の部分更新に対応
+export const updateTestimonialSchema = z
+  .object({
+    status: z.enum(["approved", "rejected"]).optional(),
+    tags: z.array(z.string().max(50)).max(20).optional(),
+    author_name: z.string().min(1, "表示名は1文字以上必要です").max(100).optional(),
+  })
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "更新するフィールドが指定されていません",
+  });
+
+export type UpdateTestimonialInput = z.infer<typeof updateTestimonialSchema>;
