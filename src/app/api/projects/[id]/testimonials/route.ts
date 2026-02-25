@@ -11,11 +11,17 @@ type Params = { params: Promise<{ id: string }> };
 
 const MAX_AVATAR_SIZE_BYTES = 2 * 1024 * 1024; // 2MB
 
-// Upstash Ratelimit: 10件/時間/IP (sliding window)
-const ratelimit = new Ratelimit({
-  redis: Redis.fromEnv(),
-  limiter: Ratelimit.slidingWindow(10, "1 h"),
-});
+// Upstash Ratelimit: 10件/時間/IP (sliding window) — 遅延初期化
+let _ratelimit: Ratelimit | null = null;
+function getRatelimit() {
+  if (!_ratelimit) {
+    _ratelimit = new Ratelimit({
+      redis: Redis.fromEnv(),
+      limiter: Ratelimit.slidingWindow(10, "1 h"),
+    });
+  }
+  return _ratelimit;
+}
 
 // GET /api/projects/:id/testimonials - テスティモニアル一覧取得（フィルタ対応）
 // フィルタパラメータ: status, rating, tags（カンマ区切り）
@@ -117,7 +123,7 @@ export async function POST(request: NextRequest, { params }: Params) {
     request.headers.get("x-real-ip") ??
     "127.0.0.1";
 
-  const { success: rateLimitSuccess } = await ratelimit.limit(ip);
+  const { success: rateLimitSuccess } = await getRatelimit().limit(ip);
   if (!rateLimitSuccess) {
     return NextResponse.json(
       {
