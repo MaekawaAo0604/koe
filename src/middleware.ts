@@ -1,36 +1,14 @@
-import { createServerClient, type CookieOptions } from "@supabase/ssr";
-import { NextResponse, type NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
+import { updateSession } from "@/lib/supabase/middleware";
 
 export async function middleware(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request });
+  const { pathname } = request.nextUrl;
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          );
-          supabaseResponse = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
+  // セッションのリフレッシュ（要件1 AC-9: セッション自動維持）
+  const { user, supabaseResponse } = await updateSession(request);
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  // 認証必須ページへの未認証アクセスをリダイレクト（要件1 AC-8）
-  if (!user && request.nextUrl.pathname.startsWith("/dashboard")) {
+  // 未認証で /dashboard* へのアクセス → /login へリダイレクト（要件1 AC-8）
+  if (!user && pathname.startsWith("/dashboard")) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
@@ -41,6 +19,14 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
+    /*
+     * 以下を除くすべてのパスにマッチ:
+     * - _next/static (静的ファイル)
+     * - _next/image (画像最適化)
+     * - favicon.ico
+     * - widget.js (埋め込みウィジェット — サードパーティサイトから直接取得)
+     * - 画像ファイル (.svg, .png, .jpg, .jpeg, .gif, .webp)
+     */
     "/((?!_next/static|_next/image|favicon.ico|widget.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
