@@ -4,6 +4,7 @@ import { useState } from "react";
 import { WidgetConfigForm } from "./widget-config-form";
 import { WidgetPreview } from "./widget-preview";
 import { EmbedCodeCopy } from "./embed-code-copy";
+import { WallOfLoveUrlCopy } from "./wall-of-love-url-copy";
 import type { Widget, WidgetType, WidgetConfig, PlanType, TestimonialPublic } from "@/types/index";
 
 interface WidgetSettingsPanelProps {
@@ -11,6 +12,7 @@ interface WidgetSettingsPanelProps {
   plan: PlanType;
   testimonials: TestimonialPublic[];
   projectId: string;
+  slug: string;
 }
 
 export function WidgetSettingsPanel({
@@ -18,6 +20,7 @@ export function WidgetSettingsPanel({
   plan,
   testimonials,
   projectId,
+  slug,
 }: WidgetSettingsPanelProps) {
   const [previewType, setPreviewType] = useState<WidgetType>(widget.type);
   const [previewConfig, setPreviewConfig] = useState<WidgetConfig>(widget.config);
@@ -39,6 +42,8 @@ export function WidgetSettingsPanel({
           onChange={handleChange}
         />
         <EmbedCodeCopy projectId={projectId} widgetId={widget.id} />
+        {/* Wall of Love 公開ページ URLコピー（要件6 AC-4） */}
+        <WallOfLoveUrlCopy slug={slug} />
       </div>
 
       {/* 右カラム: プレビュー */}

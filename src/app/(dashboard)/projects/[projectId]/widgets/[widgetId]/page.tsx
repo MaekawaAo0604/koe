@@ -37,10 +37,10 @@ export default async function WidgetSettingsPage({ params }: Params) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: project } = await (supabase as any)
     .from("projects")
-    .select("id, name")
+    .select("id, name, slug")
     .eq("id", projectId)
     .eq("user_id", user.id)
-    .single() as { data: { id: string; name: string } | null };
+    .single() as { data: { id: string; name: string; slug: string } | null };
 
   if (!project) {
     notFound();
@@ -105,6 +105,7 @@ export default async function WidgetSettingsPage({ params }: Params) {
         plan={plan}
         testimonials={typedTestimonials}
         projectId={projectId}
+        slug={project.slug}
       />
     </div>
   );
