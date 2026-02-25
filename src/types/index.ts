@@ -3,7 +3,7 @@
 export type PlanType = "free" | "pro";
 export type TestimonialStatus = "pending" | "approved" | "rejected";
 export type WidgetType = "wall" | "carousel" | "list";
-export type SubscriptionStatus = "active" | "canceled" | "past_due";
+export type SubscriptionStatus = "active" | "canceled" | "past_due" | "deleted";
 
 export interface User {
   id: string;
