@@ -3,6 +3,7 @@ import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
+import { env } from "@/lib/env";
 import { submitTestimonialSchema } from "@/lib/validators/testimonial";
 import { getTestimonialLimit, isAtLimit } from "@/lib/plan";
 import type { PlanType, TestimonialStatus } from "@/types/database";
@@ -16,7 +17,10 @@ let _ratelimit: Ratelimit | null = null;
 function getRatelimit() {
   if (!_ratelimit) {
     _ratelimit = new Ratelimit({
-      redis: Redis.fromEnv(),
+      redis: new Redis({
+        url: env("UPSTASH_REDIS_REST_URL"),
+        token: env("UPSTASH_REDIS_REST_TOKEN"),
+      }),
       limiter: Ratelimit.slidingWindow(10, "1 h"),
     });
   }
