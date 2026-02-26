@@ -4,6 +4,7 @@ import { useState } from "react";
 import { WidgetConfigForm } from "./widget-config-form";
 import { WidgetPreview } from "./widget-preview";
 import { EmbedCodeCopy } from "./embed-code-copy";
+import { PlatformGuide } from "./platform-guide";
 import { WallOfLoveUrlCopy } from "./wall-of-love-url-copy";
 import type { Widget, WidgetType, WidgetConfig, PlanType, TestimonialPublic } from "@/types/index";
 
@@ -42,6 +43,7 @@ export function WidgetSettingsPanel({
           onChange={handleChange}
         />
         <EmbedCodeCopy projectId={projectId} widgetId={widget.id} />
+        <PlatformGuide />
         {/* Wall of Love 公開ページ URLコピー（要件6 AC-4） */}
         <WallOfLoveUrlCopy slug={slug} />
       </div>
