@@ -15,7 +15,7 @@ interface EmbedCodeCopyProps {
 }
 
 const APP_URL = (
-  process.env.NEXT_PUBLIC_APP_URL || "https://koe.example.com"
+  process.env.NEXT_PUBLIC_APP_URL || "https://getkoe.jp"
 ).replace(/\/+$/, "");
 
 export function EmbedCodeCopy({ projectId, widgetId }: EmbedCodeCopyProps) {

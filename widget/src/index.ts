@@ -30,7 +30,7 @@ import { createBadge } from './badge';
 
   const apiBase = currentScript
     ? new URL(currentScript.src).origin
-    : 'https://koe.example.com';
+    : 'https://getkoe.jp';
 
   // data-widget 属性を持つすべてのスクリプトタグを対象にする
   const scriptTags = document.querySelectorAll<HTMLScriptElement>('script[data-widget]');
