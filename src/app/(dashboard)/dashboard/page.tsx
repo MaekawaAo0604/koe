@@ -10,8 +10,8 @@ export const metadata: Metadata = {
 import { Button } from "@/components/ui/button";
 import { ProjectList } from "@/components/dashboard/project-list";
 import { createClient } from "@/lib/supabase/server";
-import { getUserPlan, getProjectLimit, isAtLimit } from "@/lib/plan";
-import type { Database } from "@/types/database";
+import { getProjectLimit, isAtLimit } from "@/lib/plan";
+import type { Database, PlanType } from "@/types/database";
 import type { ProjectWithCount } from "@/types/index";
 
 export default async function DashboardPage() {
@@ -30,11 +30,19 @@ export default async function DashboardPage() {
     testimonials: { count: number }[] | null;
   };
 
-  const { data: rawData } = await supabase
-    .from("projects")
-    .select("*, testimonials(count)")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false });
+  // プロジェクト一覧取得とプラン取得を並列実行
+  const [{ data: rawData }, { data: userData }] = await Promise.all([
+    supabase
+      .from("projects")
+      .select("*, testimonials(count)")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("users")
+      .select("plan")
+      .eq("id", user.id)
+      .single(),
+  ]);
 
   const projects = rawData as ProjectWithTestimonials[] | null;
 
@@ -45,7 +53,7 @@ export default async function DashboardPage() {
   });
 
   // プラン制限チェック（要件2 AC-6,7）
-  const plan = await getUserPlan(user.id);
+  const plan = ((userData as { plan: PlanType } | null)?.plan ?? "free") as PlanType;
   const projectLimit = getProjectLimit(plan);
   const atProjectLimit =
     projectLimit !== Infinity && isAtLimit(projectsWithCount.length, projectLimit);
