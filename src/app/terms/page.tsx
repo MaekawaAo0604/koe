@@ -112,6 +112,14 @@ export default function TermsPage() {
               東京地方裁判所を第一審の専属的合意管轄裁判所とします。
             </p>
           </section>
+
+          <section>
+            <h2 className="text-xl font-semibold mb-3">運営者情報</h2>
+            <ul className="list-none space-y-1 text-muted-foreground">
+              <li>運営者: 前川蒼</li>
+              <li>メール: ao.maekawa@gmail.com</li>
+            </ul>
+          </section>
         </div>
       </main>
     </div>

@@ -133,9 +133,12 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-xl font-semibold mb-3">10. お問い合わせ</h2>
             <p className="leading-relaxed text-muted-foreground">
-              プライバシーに関するお問い合わせは、本サービスのお問い合わせフォームまたは
-              運営者のメールアドレスまでご連絡ください。
+              プライバシーに関するお問い合わせは、以下の連絡先までご連絡ください。
             </p>
+            <ul className="list-none space-y-1 text-muted-foreground mt-3">
+              <li>運営者: 前川蒼</li>
+              <li>メール: ao.maekawa@gmail.com</li>
+            </ul>
           </section>
         </div>
       </main>
