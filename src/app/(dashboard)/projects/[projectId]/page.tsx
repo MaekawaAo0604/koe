@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Settings } from "lucide-react";
+import { ArrowLeft, Settings, Code, Globe } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getUserPlan } from "@/lib/plan";
 import { Button } from "@/components/ui/button";
@@ -121,17 +121,36 @@ export default async function ProjectTestimonialsPage({
           </Button>
           <div className="min-w-0">
             <h1 className="text-2xl font-bold truncate">{typedProject.name}</h1>
-            <p className="text-sm text-muted-foreground font-mono">
-              /f/{typedProject.slug}
-            </p>
+            <Link
+              href={`/f/${typedProject.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-muted-foreground font-mono hover:underline"
+            >
+              /f/{typedProject.slug} ↗
+            </Link>
           </div>
         </div>
-        <Button variant="outline" asChild className="shrink-0">
-          <Link href={`/projects/${projectId}/settings`}>
-            <Settings className="w-4 h-4 mr-2" aria-hidden="true" />
-            設定
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2 shrink-0">
+          <Button variant="outline" asChild>
+            <Link href={`/projects/${projectId}/widgets`}>
+              <Code className="w-4 h-4 mr-2" aria-hidden="true" />
+              ウィジェット
+            </Link>
+          </Button>
+          <Button variant="outline" asChild>
+            <Link href={`/wall/${typedProject.slug}`} target="_blank" rel="noopener noreferrer">
+              <Globe className="w-4 h-4 mr-2" aria-hidden="true" />
+              Wall of Love
+            </Link>
+          </Button>
+          <Button variant="outline" asChild>
+            <Link href={`/projects/${projectId}/settings`}>
+              <Settings className="w-4 h-4 mr-2" aria-hidden="true" />
+              設定
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* 件数表示（Freeプラン時 — 要件4 AC-8）*/}
