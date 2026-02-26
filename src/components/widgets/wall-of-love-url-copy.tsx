@@ -13,8 +13,9 @@ interface WallOfLoveUrlCopyProps {
   slug: string;
 }
 
-const APP_URL =
-  process.env.NEXT_PUBLIC_APP_URL || "https://koe.example.com";
+const APP_URL = (
+  process.env.NEXT_PUBLIC_APP_URL || "https://koe.example.com"
+).replace(/\/+$/, "");
 
 export function WallOfLoveUrlCopy({ slug }: WallOfLoveUrlCopyProps) {
   const wallUrl = `${APP_URL}/wall/${slug}`;

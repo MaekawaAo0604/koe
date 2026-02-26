@@ -14,8 +14,9 @@ interface EmbedCodeCopyProps {
   widgetId: string;
 }
 
-const APP_URL =
-  process.env.NEXT_PUBLIC_APP_URL || "https://koe.example.com";
+const APP_URL = (
+  process.env.NEXT_PUBLIC_APP_URL || "https://koe.example.com"
+).replace(/\/+$/, "");
 
 export function EmbedCodeCopy({ projectId, widgetId }: EmbedCodeCopyProps) {
   const embedCode = `<script src="${APP_URL}/widget.js" data-project="${projectId}" data-widget="${widgetId}"></script>`;
