@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import { stripe } from "@/lib/stripe/client";
+import { env } from "@/lib/env";
 import type { Database } from "@/types/database";
 
 type UserRow = Database["public"]["Tables"]["users"]["Row"];
@@ -64,12 +65,12 @@ export async function POST(_request: NextRequest) {
       payment_method_types: ["card"],
       line_items: [
         {
-          price: process.env.STRIPE_PRO_PRICE_ID!,
+          price: env("STRIPE_PRO_PRICE_ID"),
           quantity: 1,
         },
       ],
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/billing?success=true`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/billing?canceled=true`,
+      success_url: `${env("NEXT_PUBLIC_APP_URL")}/billing?success=true`,
+      cancel_url: `${env("NEXT_PUBLIC_APP_URL")}/billing?canceled=true`,
       metadata: { user_id: user.id },
       subscription_data: {
         metadata: { user_id: user.id },
