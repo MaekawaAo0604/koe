@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ensureProfile } from "@/lib/auth/ensure-profile";
 import { Sidebar } from "@/components/layout/sidebar";
@@ -40,6 +41,13 @@ export default async function DashboardLayout({
         <Header userName={userName} />
         <main className="flex-1 overflow-y-auto p-6">
           {children}
+          <footer className="mt-8 border-t pt-4 pb-2 text-center text-xs text-muted-foreground">
+            <nav className="flex items-center justify-center gap-4">
+              <Link href="/terms">利用規約</Link>
+              <Link href="/privacy">プライバシーポリシー</Link>
+              <Link href="/contact">お問い合わせ</Link>
+            </nav>
+          </footer>
         </main>
       </div>
     </div>
