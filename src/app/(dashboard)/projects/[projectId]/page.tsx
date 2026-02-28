@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Settings, Code, Globe } from "lucide-react";
@@ -158,19 +157,9 @@ export default async function ProjectTestimonialsPage({
         <UsageIndicator current={totalCount ?? 0} plan={plan} />
       </div>
 
-      {/* フィルタ UI — TestimonialFilters は useSearchParams() を使用するため
-          Suspense boundary が必要（実装ルール8）*/}
+      {/* フィルタ UI */}
       <div className="mb-6">
-        <Suspense
-          fallback={
-            <div
-              className="h-24 animate-pulse rounded-lg bg-muted"
-              aria-hidden="true"
-            />
-          }
-        >
-          <TestimonialFilters availableTags={allTags} />
-        </Suspense>
+        <TestimonialFilters availableTags={allTags} />
       </div>
 
       {/* テスティモニアル一覧 */}
