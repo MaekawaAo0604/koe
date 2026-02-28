@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { MessageSquare } from "lucide-react";
 import { TestimonialCard } from "./testimonial-card";
 import type { Testimonial } from "@/types/index";
@@ -9,23 +10,39 @@ interface TestimonialListProps {
   initialTestimonials: Testimonial[];
 }
 
-export function TestimonialList({ initialTestimonials }: TestimonialListProps) {
-  const [testimonials, setTestimonials] =
+function TestimonialListInner({ initialTestimonials }: TestimonialListProps) {
+  const [allTestimonials, setAllTestimonials] =
     useState<Testimonial[]>(initialTestimonials);
+  const searchParams = useSearchParams();
 
-  // フィルタ変更時（searchParams が変わり initialTestimonials が再渡しされた時）に同期
   useEffect(() => {
-    setTestimonials(initialTestimonials);
+    setAllTestimonials(initialTestimonials);
   }, [initialTestimonials]);
 
+  const status = searchParams.get("status");
+  const rating = searchParams.get("rating")
+    ? Number(searchParams.get("rating"))
+    : null;
+  const tags = searchParams.get("tags")?.split(",").filter(Boolean) ?? [];
+
+  const testimonials = useMemo(() => {
+    return allTestimonials.filter((t) => {
+      if (status && status !== "all" && t.status !== status) return false;
+      if (rating !== null && t.rating !== rating) return false;
+      if (tags.length > 0 && !tags.some((tag) => t.tags?.includes(tag)))
+        return false;
+      return true;
+    });
+  }, [allTestimonials, status, rating, tags]);
+
   function handleUpdate(updated: Testimonial) {
-    setTestimonials((prev) =>
+    setAllTestimonials((prev) =>
       prev.map((t) => (t.id === updated.id ? updated : t))
     );
   }
 
   function handleDelete(id: string) {
-    setTestimonials((prev) => prev.filter((t) => t.id !== id));
+    setAllTestimonials((prev) => prev.filter((t) => t.id !== id));
   }
 
   if (testimonials.length === 0) {
@@ -39,10 +56,10 @@ export function TestimonialList({ initialTestimonials }: TestimonialListProps) {
           aria-hidden="true"
         />
         <p className="text-lg font-medium mb-1">
-          テスティモニアルがありません
+          お客様の声がありません
         </p>
         <p className="text-sm text-center max-w-xs">
-          フィルターを変更するか、フォームURLを共有してテスティモニアルを収集しましょう。
+          フィルターを変更するか、フォームURLを共有してお客様の声を収集しましょう。
         </p>
       </div>
     );
@@ -62,5 +79,20 @@ export function TestimonialList({ initialTestimonials }: TestimonialListProps) {
         />
       ))}
     </div>
+  );
+}
+
+export function TestimonialList({ initialTestimonials }: TestimonialListProps) {
+  return (
+    <Suspense
+      fallback={
+        <div
+          className="h-48 animate-pulse rounded-lg bg-muted"
+          aria-hidden="true"
+        />
+      }
+    >
+      <TestimonialListInner initialTestimonials={initialTestimonials} />
+    </Suspense>
   );
 }

@@ -8,28 +8,17 @@ import { Button } from "@/components/ui/button";
 import { TestimonialList } from "@/components/testimonials/testimonial-list";
 import { TestimonialFilters } from "@/components/testimonials/testimonial-filters";
 import { UsageIndicator } from "@/components/testimonials/usage-indicator";
-import type { Testimonial, TestimonialStatus, Project } from "@/types/index";
+import type { Testimonial, Project } from "@/types/index";
 
 type Params = { params: Promise<{ projectId: string }> };
-type SearchParams = {
-  searchParams: Promise<{
-    status?: string;
-    rating?: string;
-    tags?: string;
-  }>;
-};
 
 export const metadata: Metadata = {
   title: "テスティモニアル管理",
   robots: { index: false, follow: false },
 };
 
-export default async function ProjectTestimonialsPage({
-  params,
-  searchParams,
-}: Params & SearchParams) {
+export default async function ProjectTestimonialsPage({ params }: Params) {
   const { projectId } = await params;
-  const filters = await searchParams;
 
   const supabase = await createClient();
 
@@ -58,34 +47,13 @@ export default async function ProjectTestimonialsPage({
   // ユーザーのプラン取得（Freeプラン件数表示 + author_email 表示判定）
   const plan = await getUserPlan(user.id);
 
-  // テスティモニアル一覧取得（フィルタ適用 + 作成日時降順）
+  // テスティモニアル全件取得（フィルタはクライアント側で処理）
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let query = (supabase as any)
+  const { data: testimonials } = await (supabase as any)
     .from("testimonials")
     .select("*")
     .eq("project_id", projectId)
     .order("created_at", { ascending: false });
-
-  const validStatuses: TestimonialStatus[] = ["pending", "approved", "rejected"];
-  if (filters.status && validStatuses.includes(filters.status as TestimonialStatus)) {
-    query = query.eq("status", filters.status);
-  }
-
-  if (filters.rating) {
-    const r = Number(filters.rating);
-    if (Number.isInteger(r) && r >= 1 && r <= 5) {
-      query = query.eq("rating", r);
-    }
-  }
-
-  if (filters.tags) {
-    const tags = filters.tags.split(",").map((t: string) => t.trim()).filter(Boolean);
-    if (tags.length > 0) {
-      query = query.overlaps("tags", tags);
-    }
-  }
-
-  const { data: testimonials } = await query;
   const typedTestimonials = (testimonials ?? []) as unknown as Testimonial[];
 
   // フィルタなしの全件数取得（UsageIndicator 用）

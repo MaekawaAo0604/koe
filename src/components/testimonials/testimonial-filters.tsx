@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useTransition } from "react";
+import { Suspense, useCallback } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { Star, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -24,8 +24,6 @@ function TestimonialFiltersInner({ availableTags }: TestimonialFiltersProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
-  const [isPending, startTransition] = useTransition();
-
   const currentStatus = (searchParams.get("status") ?? "all") as StatusOption;
   const currentRating = searchParams.get("rating")
     ? Number(searchParams.get("rating"))
@@ -42,9 +40,7 @@ function TestimonialFiltersInner({ availableTags }: TestimonialFiltersProps) {
         params.set(key, value);
       }
       const qs = params.toString();
-      startTransition(() => {
-        router.push(qs ? `${pathname}?${qs}` : pathname);
-      });
+      router.push(qs ? `${pathname}?${qs}` : pathname);
     },
     [searchParams, router, pathname]
   );
@@ -64,7 +60,7 @@ function TestimonialFiltersInner({ availableTags }: TestimonialFiltersProps) {
     currentStatus !== "all" || currentRating !== null || currentTags.length > 0;
 
   return (
-    <div className={cn("space-y-3 rounded-lg border bg-card p-4", isPending && "opacity-60 pointer-events-none")}>
+    <div className="space-y-3 rounded-lg border bg-card p-4">
       {/* ステータスフィルタ */}
       <div className="flex items-center gap-2 flex-wrap">
         <span className="text-sm font-medium text-muted-foreground whitespace-nowrap w-20">
